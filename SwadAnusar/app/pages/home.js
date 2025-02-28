@@ -1,16 +1,16 @@
 import React from 'react';
 import { View, ImageBackground, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { useRouter } from 'expo-router';  // Import useRouter from expo-router
+import { useRouter } from 'expo-router';
 
 const Home = () => {
-  const router = useRouter();  // Initialize router
+  const router = useRouter();
 
   return (
     <ImageBackground source={require('../../assets/images/homepage.png')} style={styles.background}>
       <View style={styles.container}>
         <TouchableOpacity 
           style={styles.button} 
-          onPress={() => router.push('./login')}  // Use router.push() to navigate to login page
+          onPress={() => router.push('/pages/login')}
         >
           <Text style={styles.buttonText}>Get Started</Text>
         </TouchableOpacity>

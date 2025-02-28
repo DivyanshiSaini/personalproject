@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router'; // Use useRouter instead of navigation prop
 
-const AddRecipeScreen = ({ navigation }) => {
+const AddRecipeScreen = () => {
   const [title, setTitle] = useState('');
   const [ingredients, setIngredients] = useState([]);
   const [steps, setSteps] = useState([]);
@@ -12,6 +13,8 @@ const AddRecipeScreen = ({ navigation }) => {
   const [newIngredient, setNewIngredient] = useState('');
   const [newStep, setNewStep] = useState('');
   const [stepImage, setStepImage] = useState(null);
+
+  const router = useRouter(); // Initialize useRouter
 
   const pickImage = async (setImageCallback) => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -60,7 +63,7 @@ const AddRecipeScreen = ({ navigation }) => {
       const recipes = storedRecipes ? JSON.parse(storedRecipes) : [];
       recipes.push(newRecipe);
       await AsyncStorage.setItem('recipes', JSON.stringify(recipes));
-      navigation.goBack();
+      router.back(); // Use router.back() instead of navigation.goBack()
     } catch (error) {
       console.error('Error saving recipe:', error);
     }
@@ -229,4 +232,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddRecipeScreen;
+export default AddRecipeScreen; 
+

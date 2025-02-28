@@ -4,7 +4,6 @@ import { Image } from 'react-native';
 export default function RootLayout() {
   return (
     <Tabs
-      initialRouteName="pages/login"
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
@@ -17,14 +16,14 @@ export default function RootLayout() {
         tabBarLabelStyle: { display: 'none' },
       }}
     >
-      {/* Login Screen */}
+      {/* Recipes Screen */}
       <Tabs.Screen
-        name="pages/login"
+        name="recipes" // This corresponds to pages/recipes.js
         options={{
-          title: 'Login',
+          title: 'Recipes',
           tabBarIcon: () => (
             <Image
-              source={{ uri: 'https://img.icons8.com/ios-filled/50/FFFFFF/login-rounded-right.png' }}
+              source={{ uri: 'https://img.icons8.com/ios-filled/50/FFFFFF/recipe.png' }}
               style={{ width: 30, height: 30, marginBottom: -20 }}
             />
           ),
@@ -33,7 +32,7 @@ export default function RootLayout() {
 
       {/* Dashboard Screen */}
       <Tabs.Screen
-        name="pages/dashboard"
+        name="dashboard" // This corresponds to pages/dashboard.js
         options={{
           title: 'Dashboard',
           tabBarIcon: () => (
@@ -45,14 +44,14 @@ export default function RootLayout() {
         }}
       />
 
-      {/* Recipes Screen */}
+      {/* Settings Screen (Login for now) */}
       <Tabs.Screen
-        name="pages/recipes"
+        name="login" // This corresponds to pages/login.js
         options={{
-          title: 'Saved Recipes',
+          title: 'Settings',
           tabBarIcon: () => (
             <Image
-              source={{ uri: 'https://img.icons8.com/ios-filled/50/FFFFFF/recipe.png' }}
+              source={{ uri: 'https://img.icons8.com/ios-filled/50/FFFFFF/login-rounded-right.png' }}
               style={{ width: 30, height: 30, marginBottom: -20 }}
             />
           ),
@@ -61,3 +60,4 @@ export default function RootLayout() {
     </Tabs>
   );
 }
+

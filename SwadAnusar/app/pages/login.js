@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, ImageBackground, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';  // Import useRouter from expo-router
+import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
-  const router = useRouter();  // Initialize router
+  const router = useRouter();
 
   return (
     <ImageBackground source={require('../../assets/images/homepage.png')} style={styles.background}>
@@ -19,7 +19,7 @@ export default function LoginScreen() {
         
         <TouchableOpacity 
           style={styles.loginButton}
-          onPress={() => router.push('./dashboard')}  // Navigate to Dashboard on login button press
+          onPress={() => router.push('/pages/dashboard')}
         >
           <Text style={styles.loginText}>Login</Text>
         </TouchableOpacity>
@@ -27,7 +27,7 @@ export default function LoginScreen() {
         <Text style={styles.orText}>or Login with</Text>
         
         <TouchableOpacity>
-          <Text style={styles.signup} onPress={() => router.push('./signup')}>Sign up</Text>  // Navigate to Signup screen
+          <Text style={styles.signup} onPress={() => router.push('/pages/signup')}>Sign up</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
@@ -79,17 +79,9 @@ const styles = StyleSheet.create({
   orText: {
     marginVertical: 10,
   },
-  socialButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '50%',
-    marginBottom: 10,
-  },
-  socialIcon: {
-    padding: 5,
-  },
   signup: {
     color: '#007bff',
     fontSize: 16,
   },
 });
+
