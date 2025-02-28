@@ -57,6 +57,23 @@ export default function RootLayout() {
           ),
         }}
       />
+
+      {/* Hidden Pages */}
+      
+      <Tabs.Screen
+        name="pages/home"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="pages/signup"
+        options={{
+          tabBarStyle: { display: "none" },
+          href: null,
+        }}
+      
+      />
     </Tabs>
   );
 }

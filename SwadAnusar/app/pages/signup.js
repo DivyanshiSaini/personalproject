@@ -25,8 +25,11 @@ export default function CreateAccountScreen() {
         <Text style={styles.orText}>or Create Account with</Text>
         
         <TouchableOpacity>
-          <Text style={styles.login} onPress={() => router.push('./login')}>Already have an account? Log in</Text>  // Navigate to Login page
+          <Text style={styles.login} onPress={() => router.push('./login')}>
+            Already have an account? Log in
+          </Text>  // Navigate to Login page
         </TouchableOpacity>
+
       </View>
     </ImageBackground>
   );

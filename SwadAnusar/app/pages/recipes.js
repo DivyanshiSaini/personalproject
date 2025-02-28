@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 const RecipesScreen = () => {
   const [recipes, setRecipes] = useState([]);
@@ -40,7 +41,7 @@ const RecipesScreen = () => {
 
         <TouchableOpacity 
           style={styles.addButton} 
-          onPress={() => navigation.navigate('AddRecipe')}
+          onPress={() => router.push('addRecipe')}
         >
           <Text style={styles.addButtonText}>+ Add Recipe</Text>
         </TouchableOpacity>

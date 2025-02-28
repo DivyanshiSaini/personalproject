@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 export default function Dashboard() {
   const navigation = useNavigation();
@@ -17,19 +18,19 @@ export default function Dashboard() {
         <ScrollView style={styles.chatList}>
           <TouchableOpacity
             style={styles.chatTab}
-            onPress={() => handleGroupChatPress('Tanwar Family')}
+            onPress={() => router.push('/recipes')}
           >
             <Text style={styles.chatText}>Tanwar Family</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.chatTab}
-            onPress={() => handleGroupChatPress('UF Roomies')}
+            onPress={() =>  router.push('/recipes')}
           >
             <Text style={styles.chatText}>UF Roomies</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.chatTab}
-            onPress={() => handleGroupChatPress('Dostis')}
+            onPress={() =>  router.push('/recipes')}
           >
             <Text style={styles.chatText}>Dostis</Text>
           </TouchableOpacity>
