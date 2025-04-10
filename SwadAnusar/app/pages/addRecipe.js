@@ -18,6 +18,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 
+
+// how a recpie is added, its components 
 const AddRecipeScreen = () => {
   const [title, setTitle] = useState('');
   const [ingredients, setIngredients] = useState([]);
