@@ -1,6 +1,5 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-//import { Tabs } from 'expo-router';
 import { Image } from 'react-native';
 import Dashboard from './pages/dashboard';
 import AddRecipe from './pages/addRecipe';

@@ -20,17 +20,14 @@ const settings = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      //await AsyncStorage.clear(); // Clears stored user data
       Alert.alert("Logged Out", "You have been successfully logged out.");
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Login" }], // Ensures user can't navigate back
-      });
+      // No need to manually navigate — RootLayout will handle it
     } catch (error) {
       console.error("Logout failed:", error);
       Alert.alert("Error", "Logout failed. Please try again.");
     }
   };
+  
 
   const settingsOptions = [
     {

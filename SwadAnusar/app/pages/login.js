@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ImageBackground, StyleSheet, ActivityIndicator, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/FirebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function LoginScreen() {
-  const router = useRouter();
+export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -38,7 +36,9 @@ export default function LoginScreen() {
       ]);
       
       console.log('Login successful:', user.email);
-      router.push('/dashboard');
+      
+      // Instead of reset, just let the RootLayout detect the authenticated user
+      // The onAuthStateChanged listener in RootLayout will handle navigation
     } catch (error) {
       console.error('Login failed:', error.message);
       let errorMessage = 'Login failed. Please try again.';
@@ -86,7 +86,7 @@ export default function LoginScreen() {
           autoCapitalize="none"
         />
         
-        <TouchableOpacity onPress={() => router.push('/forgot-password')}>
+        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
           <Text style={styles.forgot}>Forgot Password?</Text>
         </TouchableOpacity>
         
@@ -104,7 +104,7 @@ export default function LoginScreen() {
           <View style={styles.dividerLine} />
         </View>
         
-        <TouchableOpacity onPress={() => router.push('/signup')}>
+        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
           <Text style={styles.signup}>Don't have an account? <Text style={styles.signupHighlight}>Sign up</Text></Text>
         </TouchableOpacity>
       </View>

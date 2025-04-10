@@ -1,4 +1,3 @@
-// app/Pages/dashboard.js
 import React, { useState, useEffect } from 'react';
 import { 
   View, 
@@ -10,20 +9,18 @@ import {
   FlatList, 
   Image 
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/FirebaseConfig';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
-const Dashboard = () => {
-  const navigation = useNavigation();
+const Dashboard = ({ navigation }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const currentUserEmail = await AsyncStorage.getItem('userEmail'); // Make sure you store email with this key
+        const currentUserEmail = await AsyncStorage.getItem('userEmail');
         if (!currentUserEmail) {
           console.log("No user email found");
           setLoading(false);
@@ -54,16 +51,18 @@ const Dashboard = () => {
   }, []);
 
   const handleUserPress = (user) => {
-    navigation.navigate('addRecipe')
-    /*navigation.navigate('chatBox', { 
-      userId: user.id,
-      userName: user.name || user.email 
-    });*/
+    navigation.navigate('AddRecipes');
+    // When you want to navigate to ChatBox, use:
+    // navigation.navigate('ChatBox', { 
+    //   userId: user.id,
+    //   userName: user.name || user.email 
+    // });
   };
 
   const handleGroupPress = (groupName) => {
-    navigation.navigate('addRecipe')
-    /*navigation.navigate('chatBox', { groupName });*/
+    navigation.navigate('AddRecipes');
+    // When you want to navigate to ChatBox, use:
+    // navigation.navigate('ChatBox', { groupName });
   };
 
   return (
