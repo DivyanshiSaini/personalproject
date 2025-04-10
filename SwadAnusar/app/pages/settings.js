@@ -20,7 +20,7 @@ const settings = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      await AsyncStorage.clear(); // Clears stored user data
+      //await AsyncStorage.clear(); // Clears stored user data
       Alert.alert("Logged Out", "You have been successfully logged out.");
       navigation.reset({
         index: 0,

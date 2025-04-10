@@ -1,37 +1,41 @@
-import React, { useState } from 'react';
-import {
-  View, Text, FlatList, StyleSheet, ImageBackground, TouchableOpacity, Alert
+import React, { useState, useCallback } from 'react';
+import { 
+  View, 
+  Text, 
+  FlatList, 
+  StyleSheet, 
+  Image, 
+  ImageBackground, 
+  TouchableOpacity, 
+  Alert 
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
-
-// recepies page, has all the recepies 
-
-const RecipesScreen = () => {
+const Recipes = () => {
   const [recipes, setRecipes] = useState([]);
   const navigation = useNavigation();
 
-  // Fetch recipes on screen focus
+  // Fetch recipes when screen is focused
+  const fetchRecipes = async () => {
+    try {
+      const storedRecipes = await AsyncStorage.getItem('recipes');
+      if (storedRecipes) {
+        setRecipes(JSON.parse(storedRecipes));
+      }
+    } catch (error) {
+      console.error('Error loading recipes:', error);
+    }
+  };
+
   useFocusEffect(
-    React.useCallback(() => {
-      const fetchRecipes = async () => {
-        try {
-          const storedRecipes = await AsyncStorage.getItem('recipes');
-          if (storedRecipes) {
-            console.log("Fetching updated recipes:", JSON.parse(storedRecipes));
-            setRecipes(JSON.parse(storedRecipes));
-          }
-        } catch (error) {
-          console.error('Error loading recipes:', error);
-        }
-      };
+    useCallback(() => {
       fetchRecipes();
-    }, [recipes]) // Ensure re-fetch on updates
+    }, [])
   );
 
+  // Delete a recipe by id
   const deleteRecipe = async (id) => {
-    console.log("Attempting to delete recipe with ID:", id);
     Alert.alert(
       'Delete Recipe',
       'Are you sure you want to delete this recipe?',
@@ -41,19 +45,11 @@ const RecipesScreen = () => {
           text: 'Delete', 
           onPress: async () => {
             try {
-              let storedRecipes = await AsyncStorage.getItem('recipes');
-              let parsedRecipes = storedRecipes ? JSON.parse(storedRecipes) : [];
-
-              // Convert IDs to strings for safe comparison
+              const storedRecipes = await AsyncStorage.getItem('recipes');
+              const parsedRecipes = storedRecipes ? JSON.parse(storedRecipes) : [];
               const updatedRecipes = parsedRecipes.filter(recipe => recipe.id.toString() !== id.toString());
-              
-              console.log("Updated recipes after deletion:", updatedRecipes);
-              
               await AsyncStorage.setItem('recipes', JSON.stringify(updatedRecipes));
-              
-              // Force UI update
-              setRecipes([]);
-              setTimeout(() => setRecipes(updatedRecipes), 100);
+              setRecipes(updatedRecipes);
             } catch (error) {
               console.error('Error deleting recipe:', error);
             }
@@ -62,7 +58,52 @@ const RecipesScreen = () => {
       ]
     );
   };
-  
+
+  // Toggle the liked state for a recipe
+  const toggleLike = async (id) => {
+    try {
+      const updatedRecipes = recipes.map(recipe => {
+        if (recipe.id.toString() === id.toString()) {
+          return { ...recipe, liked: !recipe.liked };
+        }
+        return recipe;
+      });
+      await AsyncStorage.setItem('recipes', JSON.stringify(updatedRecipes));
+      setRecipes(updatedRecipes);
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
+  };
+
+  const renderItem = ({ item }) => (
+    <View style={styles.recipeItem}>
+      <TouchableOpacity
+        style={styles.recipeContent}
+        onPress={() => navigation.navigate('RecipeDetails', { recipe: item })}
+      >
+        {item.finalImage ? (
+          <Image source={{ uri: item.finalImage }} style={styles.thumbnail} />
+        ) : (
+          <Image source={require('../../assets/images/default.png')} style={styles.thumbnail} />
+        )}
+        <Text style={styles.recipeTitle}>{item.title}</Text>
+      </TouchableOpacity>
+      <View style={styles.recipeActions}>
+        <TouchableOpacity onPress={() => toggleLike(item.id)}>
+          <Text style={[styles.likeIcon, item.liked ? styles.liked : null]}>
+            {item.liked ? '❤️' : '🤍'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => deleteRecipe(item.id)}
+        >
+          <Text style={styles.deleteButtonText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   return (
     <ImageBackground
       source={require('../../assets/images/homepage.png')}
@@ -70,27 +111,11 @@ const RecipesScreen = () => {
     >
       <View style={styles.container}>
         <Text style={styles.title}>Recipes</Text>
-
         <FlatList
           data={recipes}
-          keyExtractor={(item) => item.id.toString()} // Ensure ID is a string
-          renderItem={({ item }) => (
-            <View style={styles.recipeItem}>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('RecipeDetails', { recipe: item })}
-              >
-                <Text style={styles.recipeTitle}>{item.title}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => deleteRecipe(item.id)} // Call delete function with item id
-              >
-                <Text style={styles.deleteButtonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
         />
-
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => navigation.navigate('AddRecipes')}
@@ -104,16 +129,42 @@ const RecipesScreen = () => {
 
 const styles = StyleSheet.create({
   background: { flex: 1, resizeMode: 'cover' },
-  container: { flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.8)', padding: 20 },
+  container: { flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.9)', padding: 20 },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
   recipeItem: { 
     flexDirection: 'row', 
+    alignItems: 'center',
     justifyContent: 'space-between', 
-    padding: 15, 
+    paddingVertical: 10, 
     borderBottomWidth: 1, 
     borderBottomColor: '#ccc' 
   },
-  recipeTitle: { fontSize: 18, fontWeight: 'bold' },
+  recipeContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  thumbnail: { 
+    width: 60, 
+    height: 60, 
+    borderRadius: 8, 
+    marginRight: 12 
+  },
+  recipeTitle: { 
+    fontSize: 18, 
+    fontWeight: 'bold'
+  },
+  recipeActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  likeIcon: {
+    fontSize: 24,
+    marginRight: 10,
+  },
+  liked: {
+    color: 'red',
+  },
   deleteButton: {
     backgroundColor: '#ff0000', 
     padding: 5, 
@@ -121,10 +172,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     alignItems: 'center'
   },
-  deleteButtonText: {
-    color: '#fff', 
-    fontWeight: 'bold'
-  },
+  deleteButtonText: { color: '#fff', fontWeight: 'bold' },
   addButton: { 
     marginTop: 20, 
     backgroundColor: '#ff6347', 
@@ -135,4 +183,4 @@ const styles = StyleSheet.create({
   addButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' }
 });
 
-export default RecipesScreen;
+export default Recipes;

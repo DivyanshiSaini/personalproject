@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -15,11 +15,9 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { AntDesign } from '@expo/vector-icons';
 
-
-// how a recpie is added, its components 
 const AddRecipeScreen = () => {
   const [title, setTitle] = useState('');
   const [ingredients, setIngredients] = useState([]);
@@ -30,9 +28,9 @@ const AddRecipeScreen = () => {
   const [newStep, setNewStep] = useState('');
   const [stepImage, setStepImage] = useState(null);
 
-  const router = useRouter();
+  const navigation = useNavigation();
 
-  // Function to reset all form fields
+  // Reset form each time the screen is focused
   const resetForm = () => {
     setTitle('');
     setIngredients([]);
@@ -44,15 +42,19 @@ const AddRecipeScreen = () => {
     setStepImage(null);
   };
 
-  // Clear form when screen is focused
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       resetForm();
-      return () => {};
     }, [])
   );
 
+  // Updated pickImage to use result.assets[0].uri
   const pickImage = async (setImageCallback) => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      alert("Permission to access camera roll is required!");
+      return;
+    }
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -61,7 +63,11 @@ const AddRecipeScreen = () => {
     });
 
     if (!result.canceled) {
-      setImageCallback(result.uri);
+      const uri = result.assets && result.assets.length > 0 ? result.assets[0].uri : null;
+      if (uri) {
+        console.log("Selected image:", uri);
+        setImageCallback(uri);
+      }
     }
   };
 
@@ -84,7 +90,6 @@ const AddRecipeScreen = () => {
     }
   };
 
-  // Function to handle step submission via keyboard return key
   const handleStepSubmit = () => {
     if (newStep.trim()) {
       addStep();
@@ -98,12 +103,15 @@ const AddRecipeScreen = () => {
       return;
     }
 
+    console.log("Saving final image URI:", finalImage);
+
     const newRecipe = {
       id: Date.now().toString(),
       title,
       ingredients,
       steps,
-      finalImage,
+      finalImage: finalImage || "https://images-prod.healthline.com/hlcmsresource/images/AN_images/healthy-eating-ingredients-1296x728-header.jpg",
+      liked: false,
     };
 
     try {
@@ -112,9 +120,8 @@ const AddRecipeScreen = () => {
       recipes.push(newRecipe);
       await AsyncStorage.setItem('recipes', JSON.stringify(recipes));
       
-      // Show success message and navigate back
       alert('Recipe saved successfully!');
-      router.back();
+      navigation.navigate('RecipeDetails', { recipe: newRecipe });
     } catch (error) {
       console.error('Error saving recipe:', error);
       alert('Failed to save recipe');
@@ -124,6 +131,10 @@ const AddRecipeScreen = () => {
   return (
     <ImageBackground source={require('../../assets/images/bg.png')} style={styles.background}>
       <SafeAreaView style={styles.safeArea}>
+       {/* Back Button to Recipes */}
+       <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Recipes')}>
+          <AntDesign name="arrowleft" size={24} color="#8B0000" />
+        </TouchableOpacity>
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
           style={styles.container}
@@ -135,8 +146,6 @@ const AddRecipeScreen = () => {
           >
             <View style={styles.card}>
               <Text style={styles.header}>Add Recipe</Text>
-
-              {/* Recipe Name */}
               <TextInput 
                 style={styles.input} 
                 placeholder="Recipe Name (Required)" 
@@ -144,7 +153,6 @@ const AddRecipeScreen = () => {
                 onChangeText={setTitle} 
               />
 
-              {/* Ingredients */}
               <Text style={styles.sectionTitle}>Ingredients</Text>
               <View style={styles.ingredientRow}>
                 <View style={styles.ingredientInputContainer}>
@@ -176,7 +184,6 @@ const AddRecipeScreen = () => {
                 </View>
               ))}
 
-              {/* Steps */}
               <Text style={styles.sectionTitle}>Steps</Text>
               <TextInput 
                 style={styles.input} 
@@ -193,7 +200,7 @@ const AddRecipeScreen = () => {
                   style={[styles.button, styles.uploadButton]} 
                   onPress={() => pickImage(setStepImage)}
                 >
-                  <Text style={styles.buttonText}>Add Image</Text>
+                  <Text style={styles.buttonText}>Add Step Image</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={[styles.button, styles.addStepButton]} 
@@ -217,7 +224,6 @@ const AddRecipeScreen = () => {
                 </View>
               ))}
 
-              {/* Final Image */}
               <Text style={styles.sectionTitle}>Final Dish Photo</Text>
               <TouchableOpacity 
                 style={[styles.button, styles.uploadButton]} 
@@ -225,15 +231,19 @@ const AddRecipeScreen = () => {
               >
                 <Text style={styles.buttonText}>Upload Final Photo</Text>
               </TouchableOpacity>
-              {finalImage && (
+              {finalImage ? (
                 <Image 
                   source={{ uri: finalImage }} 
                   style={styles.finalImage} 
                   resizeMode="cover"
                 />
+              ) : (
+                <Image 
+                  source={{ uri: "https://via.placeholder.com/300x200?text=No+Image" }}
+                  style={styles.finalImage}
+                />
               )}
 
-              {/* Save Button */}
               <TouchableOpacity 
                 style={[styles.button, styles.saveButton]} 
                 onPress={saveRecipe}
@@ -257,6 +267,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    top: 40,
     flex: 1,
     width: '100%',
   },
@@ -375,8 +386,8 @@ const styles = StyleSheet.create({
   stepImage: {
     width: '100%',
     height: 150,
-    marginTop: 10,
     borderRadius: 8,
+    marginTop: 5,
   },
   finalImage: {
     width: '100%',
@@ -388,6 +399,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 5,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 45,
+    left: 20,
+    zIndex: 10,
+    padding: 10,
+    bold: true,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
 });
 

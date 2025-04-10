@@ -1,100 +1,144 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { AntDesign } from '@expo/vector-icons';
 
 const RecipeDetailsScreen = ({ route }) => {
   const { recipe } = route.params;
+  const navigation = useNavigation();
 
-  // how a recipe might be displayed 
   return (
-    <ImageBackground
-      source={require('../../assets/images/homepage.png')}
-      style={styles.background}
-    >
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Recipe Title */}
+    <ScrollView style={styles.container}>
+
+      {/* Back Button to Recipes */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Recipes')}>
+          <AntDesign name="arrowleft" size={24} color="#8B0000" />
+        </TouchableOpacity>
+
+      <View style={styles.headerContainer}>
         <Text style={styles.title}>{recipe.title}</Text>
-
-        {/* Final Dish Image */}
-        {recipe.finalImage && (
-          <Image source={{ uri: recipe.finalImage }} style={styles.finalImage} />
-        )}
-
-        {/* Ingredients Section */}
+      </View>
+      {recipe.finalImage && (
+        <Image source={{ uri: recipe.finalImage }} style={styles.headerImage} />
+      )}
+      <View style={styles.contentContainer}>
         <Text style={styles.sectionTitle}>Ingredients</Text>
-        {recipe.ingredients.map((item, index) => (
-          <View key={index} style={styles.listItemContainer}>
-            <Text style={styles.listItem}>{item.name}</Text>
-            <Text style={styles.quantity}>{item.quantity}</Text>
-          </View>
-        ))}
-
-        {/* Steps Section */}
+        {recipe.ingredients.length > 0 ? (
+          recipe.ingredients.map((item, index) => (
+            <View key={index} style={styles.ingredientItem}>
+              <Text style={styles.ingredientQuantity}>{item.quantity}</Text>
+              <Text style={styles.ingredientName}>{item.name}</Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No ingredients added.</Text>
+        )}
         <Text style={styles.sectionTitle}>Steps</Text>
-        {recipe.steps.map((item, index) => (
-          <View key={index} style={styles.stepContainer}>
-            <Text style={styles.listItem}>{item.text}</Text>
-            {item.image && <Image source={{ uri: item.image }} style={styles.stepImage} />}
-          </View>
-        ))}
-      </ScrollView>
-    </ImageBackground>
+        {recipe.steps.length > 0 ? (
+          recipe.steps.map((item, index) => (
+            <View key={index} style={styles.stepItem}>
+              <Text style={styles.stepNumber}>Step {index + 1}</Text>
+              <Text style={styles.stepText}>{item.text}</Text>
+              {item.image && (
+                <Image source={{ uri: item.image }} style={styles.stepImage} />
+              )}
+            </View>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No steps added.</Text>
+        )}
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    resizeMode: 'cover',
+  container: { 
+    flex: 1, 
+    backgroundColor: 'rgba(255,255,255,0.95)' 
   },
-  container: {
-    paddingTop: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+  headerContainer: { 
+    adding: 20, 
+    alignItems: 'center', 
+    backgroundColor: '#f8f8f8' 
   },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
+  title: { 
+    marginTop: 50, 
+    fontSize: 26, 
+    fontWeight: 'bold' ,
+    paddingBottom: 15,
   },
-  finalImage: {
-    width: '100%',
-    height: 200,
-    borderRadius: 10,
-    marginBottom: 20,
+  headerImage: { 
+    padding: 20,
+    width: '100%', 
+    height: 250, 
+    borderBottomLeftRadius: 20, 
+    borderBottomRightRadius: 20,
+    borderRadius: 20,
+  
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 15,
-    marginBottom: 5,
+  contentContainer: { 
+    paddingright: 20,
+    paddingLeft: 20, 
   },
-  listItemContainer: {
-    padding: 8,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 5,
-    marginTop: 5,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  sectionTitle: { 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    marginVertical: 10 
   },
-  listItem: {
-    fontSize: 16,
-    width: '70%', 
+  ingredientItem: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginBottom: 8 
   },
-  quantity: {
-    fontSize: 16,
-    color: '#666',
-    width: '30%',  
-    textAlign: 'right', 
+  ingredientQuantity: { 
+    fontSize: 16, 
+    fontWeight: 'bold', 
+    marginRight: 8, 
+    color: '#008080'
   },
-  stepContainer: {
+  ingredientName: { 
+    fontSize: 16, 
+    color: '#333' 
+  },
+  stepItem: { 
+    marginBottom: 15, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#eee', 
+    paddingBottom: 15 
+  },
+  stepNumber: { fontSize: 18, 
+    fontWeight: 'bold', 
+    color: '#ff6347', 
+    marginBottom: 5 
+  },
+  stepText: { 
+    fontSize: 16, 
+    color: '#333',
+  },
+  stepImage: { 
+    width: '100%', 
+    height: 250, 
+    borderRadius: 8, 
     marginTop: 10,
+    paddingTop:20,
+    paddingBottom: 20,
+    paddingRight: 20, 
+    //padding: 20,
   },
-  stepImage: {
-    width: '100%',
-    height: 150,
-    borderRadius: 8,
-    marginTop: 5,
+  emptyText: { 
+    fontSize: 16, 
+    color: '#999', 
+    fontStyle: 'italic' 
+  },
+  backButton: {
+    bold: true,
+    //backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 10,
+    padding: 10,
   },
 });
 
