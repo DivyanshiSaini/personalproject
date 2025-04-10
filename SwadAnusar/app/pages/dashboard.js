@@ -1,44 +1,152 @@
 // app/Pages/dashboard.js
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  StyleSheet, 
+  ImageBackground, 
+  ScrollView, 
+  FlatList, 
+  Image 
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FIREBASE_AUTH, FIREBASE_DB } from '@/FirebaseConfig';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
-export default function Dashboard() {
+const Dashboard = () => {
   const navigation = useNavigation();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleGroupChatPress = (groupName) => {
-    navigation.navigate('recipes', { groupName }); // Navigate to recipes screen with group name
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const currentUserEmail = await AsyncStorage.getItem('userEmail'); // Make sure you store email with this key
+        if (!currentUserEmail) {
+          console.log("No user email found");
+          setLoading(false);
+          return;
+        }
+
+        const usersRef = collection(FIREBASE_DB, 'users');
+        const q = query(usersRef, where('email', '!=', currentUserEmail));
+        const querySnapshot = await getDocs(q);
+
+        const usersData = [];
+        querySnapshot.forEach((doc) => {
+          usersData.push({
+            id: doc.id,
+            ...doc.data()
+          });
+        });
+
+        setUsers(usersData);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const handleUserPress = (user) => {
+    navigation.navigate('addRecipe')
+    /*navigation.navigate('chatBox', { 
+      userId: user.id,
+      userName: user.name || user.email 
+    });*/
+  };
+
+  const handleGroupPress = (groupName) => {
+    navigation.navigate('addRecipe')
+    /*navigation.navigate('chatBox', { groupName });*/
   };
 
   return (
-    <ImageBackground source={require('../../assets/images/homepage.png')} style={styles.background}>
+    <ImageBackground
+      source={require('../../assets/images/homepage.png')}
+      style={styles.background}
+    >
       <View style={styles.container}>
         <Text style={styles.title}>Swad Anusar</Text>
-        <ScrollView style={styles.chatList}>
-          <TouchableOpacity
-            style={styles.chatTab}
-            onPress={() => router.push('/recipes')}
-          >
-            <Text style={styles.chatText}>Tanwar Family</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.chatTab}
-            onPress={() =>  router.push('/recipes')}
-          >
-            <Text style={styles.chatText}>UF Roomies</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.chatTab}
-            onPress={() =>  router.push('/recipes')}
-          >
-            <Text style={styles.chatText}>Dostis</Text>
-          </TouchableOpacity>
-        </ScrollView>
+
+        {loading ? (
+          <Text style={styles.loadingText}>Loading users...</Text>
+        ) : (
+          <ScrollView style={styles.chatList}>
+            {/* Group Chats Section */}
+            <Text style={styles.sectionHeader}>Group Chats</Text>
+            <TouchableOpacity
+              style={styles.chatTab}
+              onPress={() => handleGroupPress('Tanwar Family')}
+            >
+              <Image 
+                source={require('../../assets/images/group-icon.png')} 
+                style={styles.chatIcon}
+              />
+              <Text style={styles.chatText}>Tanwar Family</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.chatTab}
+              onPress={() => handleGroupPress('UF Roomies')}
+            >
+              <Image 
+                source={require('../../assets/images/group-icon.png')} 
+                style={styles.chatIcon}
+              />
+              <Text style={styles.chatText}>UF Roomies</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.chatTab}
+              onPress={() => handleGroupPress('Dostis')}
+            >
+              <Image 
+                source={require('../../assets/images/group-icon.png')} 
+                style={styles.chatIcon}
+              />
+              <Text style={styles.chatText}>Dostis</Text>
+            </TouchableOpacity>
+
+            {/* Users Section */}
+            <Text style={styles.sectionHeader}>Individual Chats</Text>
+            <FlatList
+              data={users}
+              keyExtractor={(item) => item.id}
+              scrollEnabled={false}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.userTab}
+                  onPress={() => handleUserPress(item)}
+                >
+                  <Image 
+                    source={item.photoURL ? 
+                      { uri: item.photoURL } : 
+                      require('../../assets/images/user.png')} 
+                    style={styles.userIcon}
+                  />
+                  <View style={styles.userInfo}>
+                    <Text style={styles.userName}>
+                      {item.name || item.email.split('@')[0]}
+                    </Text>
+                    <Text style={styles.userStatus}>
+                      {item.status || 'Hey there! I am using Swad Anusar'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
+          </ScrollView>
+        )}
       </View>
     </ImageBackground>
   );
-}
+};
 
 const styles = StyleSheet.create({
   background: {
@@ -56,19 +164,69 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
+    color: '#D64527',
+  },
+  loadingText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
   },
   chatList: {
     marginTop: 20,
   },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginVertical: 10,
+    color: '#555',
+  },
   chatTab: {
     backgroundColor: '#D64527',
-    padding: 25,
+    padding: 15,
     borderRadius: 10,
     marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  userTab: {
+    backgroundColor: '#FFF',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    elevation: 2,
+  },
+  chatIcon: {
+    width: 30,
+    height: 30,
+    marginRight: 15,
+    tintColor: '#FFF',
+  },
+  userIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 15,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  userStatus: {
+    fontSize: 14,
+    color: '#777',
+    marginTop: 3,
   },
   chatText: {
     fontSize: 18,
     color: '#fff',
-    textAlign: 'left',
+    fontWeight: '600',
   },
 });
+
+export default Dashboard;
