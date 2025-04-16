@@ -131,7 +131,7 @@ const AddRecipeScreen = () => {
   };
 
   return (
-    <ImageBackground source={require('../../assets/images/bg.png')} style={styles.background}>
+    <ImageBackground source={require('../../assets/images/homepage.png')} style={styles.background}>
       <SafeAreaView style={styles.safeArea}>
        {/* Back Button to Recipes */}
        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Recipes')}>
@@ -169,6 +169,7 @@ const AddRecipeScreen = () => {
                   <TextInput
                     style={[styles.input, styles.quantityInput]}
                     placeholder="Qty"
+                     placeholderTextColor="gray"
                     value={newIngredientQuantity}
                     onChangeText={setNewIngredientQuantity}
                   />
@@ -190,6 +191,7 @@ const AddRecipeScreen = () => {
               <TextInput 
                 style={styles.input} 
                 placeholder="Add Step (Optional)" 
+                 placeholderTextColor="gray"
                 value={newStep} 
                 onChangeText={setNewStep} 
                 multiline
@@ -264,9 +266,11 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     resizeMode: 'cover',
+    //color: '#fff',
   },
   safeArea: {
     flex: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.75)",
   },
   container: {
     top: 40,
@@ -276,10 +280,11 @@ const styles = StyleSheet.create({
   scrollContainer: {
     paddingVertical: 15,
     paddingHorizontal: 10,
+ 
   },
   card: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor:  "rgb(242, 184, 143)",
     padding: 15,
     borderRadius: 10,
     elevation: 3,
@@ -326,6 +331,7 @@ const styles = StyleSheet.create({
   },
   quantityInput: {
     width: '100%',
+    color: 'gray',
   },
   smallAddButton: {
     backgroundColor: '#ff6347',
@@ -369,9 +375,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
   },
-  quantityText: {
+  quantityTex: {
     fontWeight: 'bold',
-    color: '#008080',
+    //color: '#008080',
   },
   stepContainer: {
     marginTop: 15,
@@ -409,7 +415,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
     padding: 10,
     bold: true,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    //backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
 });
 

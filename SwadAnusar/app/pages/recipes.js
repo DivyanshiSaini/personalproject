@@ -137,7 +137,12 @@ const Recipes = () => {
 const styles = StyleSheet.create({
   background: { flex: 1, resizeMode: 'cover' },
   container: { flex: 1, backgroundColor: 'rgba(255, 255, 255, 0.9)', padding: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
+  title: { fontSize: 25, 
+    fontWeight: 'bold', 
+    marginBottom: 20,
+    marginTop: 30, 
+    color: '#D64527'
+  },
   recipeItem: { 
     flexDirection: 'row', 
     alignItems: 'center',
