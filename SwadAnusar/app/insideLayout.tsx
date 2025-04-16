@@ -9,6 +9,7 @@ import { LogBox } from 'react-native';
 import Login from './pages/login';
 import Signup from './pages/signup';
 import MyLibrary from './pages/myLibrary';
+import FavoriteRecipes from './pages/favoriteRecipes';
 import Settings from './pages/settings';
 import ChatBox from './pages/chatBox';
 import RecipeDetails from './pages/recipeDetails';
@@ -107,6 +108,12 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="MyLibrary"
         component={MyLibrary}
+        options={{ tabBarItemStyle: { display: "none" } }}
+      />
+      {/* Hidden Screen */}
+      <Tabs.Screen
+        name="FavoriteRecipes"
+        component={FavoriteRecipes}
         options={{ tabBarItemStyle: { display: "none" } }}
       />
     </Tabs.Navigator>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { onAuthStateChanged } from 'firebase/auth';
-import { FIREBASE_AUTH } from '@/FirebaseConfig';
+import { FIREBASE_AUTH } from './firebase/config'; // Ensure this is correctly imported from your firebase config file
 import InsideLayout from './insideLayout';
 import Login from './pages/login';
 import Signup from './pages/signup';

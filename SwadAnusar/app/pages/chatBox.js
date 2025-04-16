@@ -1,4 +1,3 @@
-// app/Pages/ChatScreen.js
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
@@ -9,120 +8,344 @@ import {
   FlatList, 
   Image,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Alert,
+  Modal
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { FIREBASE_AUTH, FIREBASE_DB } from '@/FirebaseConfig';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../firebase/config';
 import { 
   collection, 
-  doc, 
   addDoc, 
   onSnapshot, 
   query, 
   orderBy, 
-  serverTimestamp 
+  serverTimestamp,
+  getDocs,
+  where
 } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 
-const chatBox = () => {
+const ChatBox = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [userId, setUserId] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
+  const [recipes, setRecipes] = useState([]);
+  const [showRecipeModal, setShowRecipeModal] = useState(false);
   const flatListRef = useRef(null);
   
-  // Get chat type and ID from route params
-  const { chatType, chatId, chatName } = route.params;
-  const isGroupChat = chatType === 'group';
+  // Get chat parameters
+  const { 
+    chatId, 
+    chatName,
+    currentUserId
+  } = route.params;
+  
+  // If a recipe was passed through navigation params
+  const sharedRecipe = route.params?.sharedRecipe;
 
   useEffect(() => {
+    // Verify authentication state
+    if (!FIREBASE_AUTH.currentUser) {
+      Alert.alert('Authentication Error', 'Please log in to continue');
+      navigation.goBack();
+      return;
+    }
+
     // Set up the chat header
     navigation.setOptions({
       title: chatName || 'Chat',
     });
 
-    // Get current user ID
-    const getUserId = async () => {
-      const id = await AsyncStorage.getItem('userId');
-      setUserId(id);
+    // Get current user information
+    const getUserInfo = async () => {
+      try {
+        const id = await AsyncStorage.getItem('userId');
+        const email = await AsyncStorage.getItem('userEmail');
+        const name = await AsyncStorage.getItem('userName');
+        
+        if (!id || !email) {
+          throw new Error('User information not found');
+        }
+        
+        setUserId(id);
+        setUserEmail(email);
+        setUserName(name || email.split('@')[0]);
+        
+        // If there's a shared recipe, send it immediately
+        if (sharedRecipe) {
+          sendRecipe(sharedRecipe);
+        }
+      } catch (error) {
+        console.error('Error getting user info:', error);
+        Alert.alert('Error', 'Failed to load user information');
+      }
     };
-    getUserId();
+    getUserInfo();
 
     // Set up real-time listener for messages
-    let messagesRef;
-    if (isGroupChat) {
-      messagesRef = collection(FIREBASE_DB, 'groupChats', chatId, 'messages');
-    } else {
-      // For individual chats, we use a combined ID to keep chats between two users
-      const chatDocId = [userId, chatId].sort().join('_');
-      messagesRef = collection(FIREBASE_DB, 'individualChats', chatDocId, 'messages');
-    }
+    const setupChat = async () => {
+      try {
+        const chatDocId = getChatDocId(currentUserId, chatId);
+        const messagesRef = collection(FIREBASE_DB, 'individualChats', chatDocId, 'messages');
+        
+        const q = query(messagesRef, orderBy('timestamp', 'asc'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+          const msgs = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            timestamp: doc.data().timestamp?.toDate() // Convert Firestore timestamp to Date
+          }));
+          setMessages(msgs);
+          
+          // Scroll to bottom when new messages arrive
+          setTimeout(() => {
+            flatListRef.current?.scrollToEnd({ animated: true });
+          }, 100);
+        });
 
-    const q = query(messagesRef, orderBy('timestamp', 'asc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setMessages(msgs);
+        // Fetch user's recipes
+        await fetchUserRecipes();
+
+        return unsubscribe;
+      } catch (error) {
+        console.error('Chat setup error:', error);
+        Alert.alert('Error', 'Failed to load chat messages');
+      }
+    };
+
+    const unsubscribe = setupChat();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [chatId, sharedRecipe, currentUserId]);
+
+  const getChatDocId = (uid1, uid2) => {
+    return [uid1, uid2].sort().join('_');
+  };
+
+  const fetchUserRecipes = async () => {
+    try {
+      const userEmail = await AsyncStorage.getItem('userEmail');
+      if (!userEmail) {
+        console.log('No user email found');
+        return;
+      }
+
+      const recipesRef = collection(FIREBASE_DB, 'recipes');
+      const q = query(recipesRef, where('userEmail', '==', userEmail));
+      const querySnapshot = await getDocs(q);
       
-      // Scroll to bottom when new messages arrive
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    });
-
-    return () => unsubscribe();
-  }, [chatId, userId]);
+      const recipesList = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      setRecipes(recipesList);
+    } catch (error) {
+      console.error('Error fetching recipes:', error);
+      Alert.alert('Error', 'Failed to load your recipes');
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
 
     try {
-      const userEmail = await AsyncStorage.getItem('userEmail');
-      const userName = await AsyncStorage.getItem('userName');
-      
-      let messagesRef;
-      if (isGroupChat) {
-        messagesRef = collection(FIREBASE_DB, 'groupChats', chatId, 'messages');
-      } else {
-        const chatDocId = [userId, chatId].sort().join('_');
-        messagesRef = collection(FIREBASE_DB, 'individualChats', chatDocId, 'messages');
+      // Verify authentication
+      if (!FIREBASE_AUTH.currentUser) {
+        Alert.alert('Error', 'You must be logged in to send messages');
+        return;
       }
+
+      const chatDocId = getChatDocId(currentUserId, chatId);
+      const messagesRef = collection(FIREBASE_DB, 'individualChats', chatDocId, 'messages');
 
       await addDoc(messagesRef, {
         text: newMessage,
         senderId: userId,
         senderEmail: userEmail,
         senderName: userName,
-        timestamp: serverTimestamp()
+        timestamp: serverTimestamp(),
+        type: 'text'
       });
 
       setNewMessage('');
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending message:', {
+        code: error.code,
+        message: error.message,
+        stack: error.stack
+      });
+      Alert.alert('Error', `Failed to send message: ${error.message}`);
     }
+  };
+
+  const sendRecipe = async (recipe) => {
+    try {
+      // Verify authentication
+      if (!FIREBASE_AUTH.currentUser) {
+        Alert.alert('Error', 'You must be logged in to share recipes');
+        return;
+      }
+
+      const chatDocId = getChatDocId(currentUserId, chatId);
+      const messagesRef = collection(FIREBASE_DB, 'individualChats', chatDocId, 'messages');
+
+      await addDoc(messagesRef, {
+        senderId: userId,
+        senderEmail: userEmail,
+        senderName: userName,
+        timestamp: serverTimestamp(),
+        type: 'recipe',
+        recipe: recipe
+      });
+
+      // Close modal if open
+      setShowRecipeModal(false);
+      
+      // Clear navigation params if needed
+      if (route.params?.sharedRecipe) {
+        navigation.setParams({ sharedRecipe: null });
+      }
+    } catch (error) {
+      console.error('Error sending recipe:', {
+        code: error.code,
+        message: error.message,
+        stack: error.stack
+      });
+      Alert.alert('Error', `Failed to share recipe: ${error.message}`);
+    }
+  };
+
+  const handleRecipePress = (recipe) => {
+    navigation.navigate('RecipeDetails', { recipe });
   };
 
   const renderMessage = ({ item }) => {
     const isCurrentUser = item.senderId === userId;
     
-    return (
-      <View style={[
-        styles.messageContainer, 
-        isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage
-      ]}>
-        {!isCurrentUser && !isGroupChat && (
-          <Text style={styles.senderName}>{item.senderName}</Text>
-        )}
-        <Text style={styles.messageText}>{item.text}</Text>
-        <Text style={styles.messageTime}>
-          {item.timestamp?.toDate()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </Text>
-      </View>
-    );
+    if (item.type === 'recipe') {
+      return (
+        <TouchableOpacity
+          onPress={() => handleRecipePress(item.recipe)}
+          style={[
+            styles.recipeContainer,
+            isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage
+          ]}
+        >
+          {!isCurrentUser && (
+            <Text style={styles.senderName}>{item.senderName}</Text>
+          )}
+          
+          <View style={styles.recipeContent}>
+            <Text style={[
+              styles.recipeTitle,
+              isCurrentUser ? styles.currentUserText : styles.otherUserText
+            ]}>
+              Recipe: {item.recipe.title}
+            </Text>
+            
+            {item.recipe.finalImage && (
+              <Image 
+                source={{ uri: item.recipe.finalImage }} 
+                style={styles.recipeImage} 
+              />
+            )}
+            
+            <Text style={[
+              styles.recipeTapPrompt,
+              isCurrentUser ? styles.currentUserText : styles.otherUserText
+            ]}>
+              Tap to view recipe
+            </Text>
+          </View>
+          
+          <Text style={[
+            styles.messageTime,
+            isCurrentUser ? styles.currentUserTime : styles.otherUserTime
+          ]}>
+            {item.timestamp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Text>
+        </TouchableOpacity>
+      );
+    } else {
+      return (
+        <View style={[
+          styles.messageContainer, 
+          isCurrentUser ? styles.currentUserMessage : styles.otherUserMessage
+        ]}>
+          {!isCurrentUser && (
+            <Text style={styles.senderName}>{item.senderName}</Text>
+          )}
+          <Text style={[
+            styles.messageText,
+            isCurrentUser ? styles.currentUserText : styles.otherUserText
+          ]}>
+            {item.text}
+          </Text>
+          <Text style={[
+            styles.messageTime,
+            isCurrentUser ? styles.currentUserTime : styles.otherUserTime
+          ]}>
+            {item.timestamp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Text>
+        </View>
+      );
+    }
   };
+
+  const RecipeSelectionModal = () => (
+    <Modal
+      visible={showRecipeModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setShowRecipeModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Share a Recipe</Text>
+            <TouchableOpacity onPress={() => setShowRecipeModal(false)}>
+              <AntDesign name="close" size={24} color="#D64527" />
+            </TouchableOpacity>
+          </View>
+          
+          {recipes.length === 0 ? (
+            <Text style={styles.noRecipesText}>No recipes available to share</Text>
+          ) : (
+            <FlatList
+              data={recipes}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <TouchableOpacity 
+                  style={styles.recipeListItem} 
+                  onPress={() => sendRecipe(item)}
+                >
+                  {item.finalImage ? (
+                    <Image 
+                      source={{ uri: item.finalImage }} 
+                      style={styles.recipeListImage} 
+                    />
+                  ) : (
+                    <View style={styles.noImagePlaceholder}>
+                      <MaterialIcons name="restaurant" size={24} color="#999" />
+                    </View>
+                  )}
+                  <Text style={styles.recipeListTitle}>{item.title}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          )}
+        </View>
+      </View>
+    </Modal>
+  );
 
   return (
     <KeyboardAvoidingView
@@ -140,6 +363,13 @@ const chatBox = () => {
       />
       
       <View style={styles.inputContainer}>
+        <TouchableOpacity 
+          style={styles.attachButton} 
+          onPress={() => setShowRecipeModal(true)}
+        >
+          <MaterialIcons name="restaurant" size={24} color="#D64527" />
+        </TouchableOpacity>
+        
         <TextInput
           style={styles.input}
           value={newMessage}
@@ -148,13 +378,17 @@ const chatBox = () => {
           placeholderTextColor="#999"
           multiline
         />
+        
         <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
           <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
       </View>
+      
+      <RecipeSelectionModal />
     </KeyboardAvoidingView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -183,12 +417,11 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 16,
+  },
+  currentUserText: {
     color: '#fff',
   },
-  currentUserMessageText: {
-    color: '#fff',
-  },
-  otherUserMessageText: {
+  otherUserText: {
     color: '#333',
   },
   senderName: {
@@ -199,9 +432,14 @@ const styles = StyleSheet.create({
   },
   messageTime: {
     fontSize: 10,
-    color: 'rgba(255,255,255,0.7)',
     marginTop: 4,
     alignSelf: 'flex-end',
+  },
+  currentUserTime: {
+    color: 'rgba(255,255,255,0.7)',
+  },
+  otherUserTime: {
+    color: 'rgba(0,0,0,0.5)',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -232,6 +470,94 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  attachButton: {
+    padding: 10,
+    marginRight: 5,
+  },
+  // Recipe message styles
+  recipeContainer: {
+    maxWidth: '80%',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  recipeContent: {
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  recipeTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  recipeImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  recipeTapPrompt: {
+    fontSize: 12,
+    fontStyle: 'italic',
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#D64527',
+  },
+  noRecipesText: {
+    fontSize: 16,
+    color: '#999',
+    textAlign: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  recipeListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  recipeListImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 15,
+  },
+  noImagePlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 15,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  recipeListTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    flex: 1,
+  },
 });
 
-export default chatBox;
+export default ChatBox;

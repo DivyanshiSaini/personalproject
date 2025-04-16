@@ -104,6 +104,7 @@ const AddRecipeScreen = () => {
     }
 
     console.log("Saving final image URI:", finalImage);
+    const userEmail = await AsyncStorage.getItem('userEmail');
 
     const newRecipe = {
       id: Date.now().toString(),
@@ -112,6 +113,7 @@ const AddRecipeScreen = () => {
       steps,
       finalImage: finalImage || "https://images-prod.healthline.com/hlcmsresource/images/AN_images/healthy-eating-ingredients-1296x728-header.jpg",
       liked: false,
+      userEmail // Add this line to include creator email
     };
 
     try {

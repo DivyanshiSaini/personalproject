@@ -1,7 +1,7 @@
-// Import the functions you need from the SDKs you need
+// app/firebase/config.js
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
@@ -9,7 +9,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyALMMs85m1Y1_JPfF-LudyyGEn2h6yRY-c",
   authDomain: "swad-anusar.firebaseapp.com",
   projectId: "swad-anusar",
-  storageBucket: "swad-anusar.appspot.com", // Changed to standard format
+  storageBucket: "swad-anusar.appspot.com",
   messagingSenderId: "69748885362",
   appId: "1:69748885362:web:75d7acba691e90019dffeb",
   measurementId: "G-E8312J24LX"
