@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { FIREBASE_AUTH, FIREBASE_DB } from '@/FirebaseConfig';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../firebase/config';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import Ionicons from 'react-native-vector-icons/Ionicons';

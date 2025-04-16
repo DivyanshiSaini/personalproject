@@ -47,6 +47,17 @@ const RecipeDetailsScreen = ({ route }) => {
         ) : (
           <Text style={styles.emptyText}>No steps added.</Text>
         )}
+        // Add to RecipeDetailsScreen component
+          <View style={styles.shareContainer}>
+            <TouchableOpacity 
+              style={styles.shareButton}
+              onPress={() => navigation.navigate('ChatBox', {
+                sharedRecipe: recipe
+              })}
+            >
+              <Text style={styles.shareButtonText}>Share this Recipe</Text>
+            </TouchableOpacity>
+          </View>
       </View>
     </ScrollView>
   );
@@ -140,6 +151,21 @@ const styles = StyleSheet.create({
     zIndex: 10,
     padding: 10,
   },
+  shareContainer: {
+    padding: 20,
+    alignItems: 'center'
+  },
+  shareButton: {
+    backgroundColor: '#D64527',
+    padding: 15,
+    borderRadius: 8,
+    width: '80%',
+    alignItems: 'center'
+  },
+  shareButtonText: {
+    color: 'white',
+    fontWeight: 'bold'
+  }
 });
 
 export default RecipeDetailsScreen;

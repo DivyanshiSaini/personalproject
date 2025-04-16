@@ -122,6 +122,13 @@ const Recipes = () => {
         >
           <Text style={styles.addButtonText}>+ Add Recipe</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.addButton, { backgroundColor: '#4CAF50', marginTop: 10 }]}
+          onPress={() => navigation.navigate('FavoriteRecipes')}
+        >
+          <Text style={styles.addButtonText}>❤️ View Favorites</Text>
+      </TouchableOpacity>
+
       </View>
     </ImageBackground>
   );

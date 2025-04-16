@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ImageBackground, StyleSheet, ActivityIndicator, Alert } from 'react-native';
-import { FIREBASE_AUTH, FIREBASE_DB } from '@/FirebaseConfig';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../firebase/config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';

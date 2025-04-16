@@ -10,7 +10,7 @@ import {
   Image 
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FIREBASE_AUTH, FIREBASE_DB } from '@/FirebaseConfig';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../firebase/config';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 const Dashboard = ({ navigation }) => {
@@ -21,6 +21,8 @@ const Dashboard = ({ navigation }) => {
     const fetchUsers = async () => {
       try {
         const currentUserEmail = await AsyncStorage.getItem('userEmail');
+        const currentUserId = await AsyncStorage.getItem('userId');
+        
         if (!currentUserEmail) {
           console.log("No user email found");
           setLoading(false);
@@ -50,20 +52,32 @@ const Dashboard = ({ navigation }) => {
     fetchUsers();
   }, []);
 
-  const handleUserPress = (user) => {
-    navigation.navigate('AddRecipes');
-    // When you want to navigate to ChatBox, use:
-    // navigation.navigate('ChatBox', { 
-    //   userId: user.id,
-    //   userName: user.name || user.email 
-    // });
+// Update handleUserPress in dashboard.js
+const handleUserPress = async (user) => {
+  const currentUserId = await AsyncStorage.getItem('userId');
+  
+  navigation.navigate('ChatBox', { 
+    chatType: 'individual',
+    chatId: user.id,
+    currentUserId: currentUserId, // Pass current user ID
+    chatName: user.name || user.email.split('@')[0]
+  });
+};
+
+  const handleGroupPress = (groupName, groupId) => {
+    navigation.navigate('ChatBox', { 
+      chatType: 'group',
+      chatId: groupId,
+      chatName: groupName
+    });
   };
 
-  const handleGroupPress = (groupName) => {
-    navigation.navigate('AddRecipes');
-    // When you want to navigate to ChatBox, use:
-    // navigation.navigate('ChatBox', { groupName });
-  };
+  // Hardcoded groups for demonstration
+  const groups = [
+    { id: 'tanwar_family', name: 'Tanwar Family' },
+    { id: 'uf_roomies', name: 'UF Roomies' },
+    { id: 'dostis', name: 'Dostis' }
+  ];
 
   return (
     <ImageBackground
@@ -79,38 +93,19 @@ const Dashboard = ({ navigation }) => {
           <ScrollView style={styles.chatList}>
             {/* Group Chats Section */}
             <Text style={styles.sectionHeader}>Group Chats</Text>
-            <TouchableOpacity
-              style={styles.chatTab}
-              onPress={() => handleGroupPress('Tanwar Family')}
-            >
-              <Image 
-                source={require('../../assets/images/group-icon.png')} 
-                style={styles.chatIcon}
-              />
-              <Text style={styles.chatText}>Tanwar Family</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.chatTab}
-              onPress={() => handleGroupPress('UF Roomies')}
-            >
-              <Image 
-                source={require('../../assets/images/group-icon.png')} 
-                style={styles.chatIcon}
-              />
-              <Text style={styles.chatText}>UF Roomies</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.chatTab}
-              onPress={() => handleGroupPress('Dostis')}
-            >
-              <Image 
-                source={require('../../assets/images/group-icon.png')} 
-                style={styles.chatIcon}
-              />
-              <Text style={styles.chatText}>Dostis</Text>
-            </TouchableOpacity>
+            {groups.map((group) => (
+              <TouchableOpacity
+                key={group.id}
+                style={styles.chatTab}
+                onPress={() => handleGroupPress(group.name, group.id)}
+              >
+                <Image 
+                  source={require('../../assets/images/group-icon.png')} 
+                  style={styles.chatIcon}
+                />
+                <Text style={styles.chatText}>{group.name}</Text>
+              </TouchableOpacity>
+            ))}
 
             {/* Users Section */}
             <Text style={styles.sectionHeader}>Individual Chats</Text>

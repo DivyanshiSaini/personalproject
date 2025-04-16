@@ -10,10 +10,10 @@ import {
   Alert,
 } from "react-native";
 import { signOut } from "firebase/auth";
-import { FIREBASE_AUTH } from "@/FirebaseConfig";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { FIREBASE_AUTH } from "../firebase/config";
+import Ionicons from "react-native-vector-icons/Ionicons"; // 🆕 import icon
 
-const settings = () => {
+const Settings = () => {
   const navigation = useNavigation();
   const auth = FIREBASE_AUTH;
 
@@ -21,13 +21,11 @@ const settings = () => {
     try {
       await signOut(auth);
       Alert.alert("Logged Out", "You have been successfully logged out.");
-      // No need to manually navigate — RootLayout will handle it
     } catch (error) {
       console.error("Logout failed:", error);
       Alert.alert("Error", "Logout failed. Please try again.");
     }
   };
-  
 
   const settingsOptions = [
     {
@@ -36,14 +34,9 @@ const settings = () => {
       onPress: () => navigation.navigate("AccountInfo"),
     },
     {
-      title: "Library",
+      title: "My Favorite Recipes",
       icon: "https://img.icons8.com/ios-filled/50/book.png",
-      onPress: () => navigation.navigate("Library"),
-    },
-    {
-      title: "About Us",
-      icon: "https://img.icons8.com/ios-filled/50/info.png",
-      onPress: () => navigation.navigate("AboutUs"),
+      onPress: () => navigation.navigate("FavoriteRecipes"),
     },
     {
       title: "Logout",
@@ -54,11 +47,22 @@ const settings = () => {
 
   return (
     <ImageBackground
-      source={require("../../assets/images/bg.png")}
+      source={require("../../assets/images/homepage.png")}
       style={styles.backgroundImage}
+      resizeMode="cover"
     >
       <View style={styles.overlay}>
-        <Text style={styles.heading}>Settings</Text>
+        {/* Top Row: Heading + Info Icon */}
+        <View style={styles.topRow}>
+          <Text style={styles.heading}>User Settings</Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("AboutUs")}
+            style={styles.infoButton}
+          >
+            <Ionicons name="information-circle" size={28} color="#D64527" />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.optionContainer}>
           {settingsOptions.map((item, index) => (
             <TouchableOpacity
@@ -68,7 +72,7 @@ const settings = () => {
                 item.title === "Logout" && styles.logoutButton,
               ]}
               onPress={item.onPress}
-              activeOpacity={0.8}
+              activeOpacity={0.9}
             >
               <View style={styles.option}>
                 <Image source={{ uri: item.icon }} style={styles.icon} />
@@ -97,29 +101,39 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.85)",
     paddingTop: 60,
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
   },
   heading: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: "#2E231E",
-    textAlign: "center",
-    marginBottom: 30,
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#D64527",
+    textAlign: "left",
+    letterSpacing: 1,
+  },
+  infoButton: {
+    padding: 4,
   },
   optionContainer: {
-    gap: 20,
+    gap: 16,
   },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingVertical: 15,
+    backgroundColor: "#FFF6F1",
+    borderRadius: 20,
+    paddingVertical: 16,
     paddingHorizontal: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
-    elevation: 4,
+    elevation: 5,
   },
   option: {
     flexDirection: "row",
@@ -128,8 +142,8 @@ const styles = StyleSheet.create({
   icon: {
     width: 28,
     height: 28,
-    marginRight: 15,
-    tintColor: "#2E231E",
+    marginRight: 14,
+    tintColor: "#D64527",
   },
   optionText: {
     fontSize: 18,
@@ -137,11 +151,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   logoutButton: {
-    backgroundColor: "#D64527",
+    backgroundColor: "#FFF6F1",
   },
   logoutText: {
-    color: "#fff",
+    color: "#2E231E",
+    fontWeight: "700",
   },
 });
 
-export default settings;
+export default Settings;
