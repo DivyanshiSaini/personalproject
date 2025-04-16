@@ -89,7 +89,7 @@ const ChatBox = () => {
     getUserInfo();
 
     // Set up real-time listener for messages
-    const setupChat = async () => {
+    const setupChat = () => {
       try {
         const chatDocId = getChatDocId(currentUserId, chatId);
         const messagesRef = collection(FIREBASE_DB, 'individualChats', chatDocId, 'messages');
@@ -109,19 +109,26 @@ const ChatBox = () => {
           }, 100);
         });
 
-        // Fetch user's recipes
-        await fetchUserRecipes();
+        // Fetch user's recipes from AsyncStorage
+        fetchLocalRecipes();
 
+        // Return the unsubscribe function
         return unsubscribe;
       } catch (error) {
         console.error('Chat setup error:', error);
         Alert.alert('Error', 'Failed to load chat messages');
+        return null;
       }
     };
 
-    const unsubscribe = setupChat();
+    // Set up the chat and store the unsubscribe function
+    const unsubscribeListener = setupChat();
+
+    // Cleanup function to unsubscribe from Firestore listener
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (unsubscribeListener) {
+        unsubscribeListener();
+      }
     };
   }, [chatId, sharedRecipe, currentUserId]);
 
@@ -129,26 +136,18 @@ const ChatBox = () => {
     return [uid1, uid2].sort().join('_');
   };
 
-  const fetchUserRecipes = async () => {
+  // Function to fetch recipes from AsyncStorage
+  const fetchLocalRecipes = async () => {
     try {
-      const userEmail = await AsyncStorage.getItem('userEmail');
-      if (!userEmail) {
-        console.log('No user email found');
-        return;
+      const storedRecipes = await AsyncStorage.getItem('recipes');
+      if (storedRecipes) {
+        setRecipes(JSON.parse(storedRecipes));
+      } else {
+        console.log('No recipes found in AsyncStorage');
+        setRecipes([]);
       }
-
-      const recipesRef = collection(FIREBASE_DB, 'recipes');
-      const q = query(recipesRef, where('userEmail', '==', userEmail));
-      const querySnapshot = await getDocs(q);
-      
-      const recipesList = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      setRecipes(recipesList);
     } catch (error) {
-      console.error('Error fetching recipes:', error);
+      console.error('Error fetching local recipes:', error);
       Alert.alert('Error', 'Failed to load your recipes');
     }
   };
@@ -321,7 +320,7 @@ const ChatBox = () => {
           ) : (
             <FlatList
               data={recipes}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
                 <TouchableOpacity 
                   style={styles.recipeListItem} 
@@ -353,6 +352,13 @@ const ChatBox = () => {
       style={styles.container}
       keyboardVerticalOffset={90}
     >
+      {/* Chat recipient header */}
+      <View style={styles.recipientHeader}>
+        <Text style={styles.recipientText}>
+          Chatting with: <Text style={styles.recipientName}>{chatName}</Text>
+        </Text>
+      </View>
+      
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -365,7 +371,12 @@ const ChatBox = () => {
       <View style={styles.inputContainer}>
         <TouchableOpacity 
           style={styles.attachButton} 
-          onPress={() => setShowRecipeModal(true)}
+          onPress={() => {
+            // Refresh recipes before showing modal
+            fetchLocalRecipes().then(() => {
+              setShowRecipeModal(true);
+            });
+          }}
         >
           <MaterialIcons name="restaurant" size={24} color="#D64527" />
         </TouchableOpacity>
@@ -394,6 +405,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  recipientHeader: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    elevation: 2,
+  },
+  recipientText: {
+    fontSize: 14,
+    color: '#666',
+  },
+  recipientName: {
+    fontWeight: 'bold',
+    color: '#D64527',
   },
   messagesList: {
     padding: 15,

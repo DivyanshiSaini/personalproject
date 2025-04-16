@@ -85,7 +85,7 @@ const handleUserPress = async (user) => {
       style={styles.background}
     >
       <View style={styles.container}>
-        <Text style={styles.title}>Swad Anusar</Text>
+        <Text style={styles.title}>Chats</Text>
 
         {loading ? (
           <Text style={styles.loadingText}>Loading users...</Text>
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
+    textAlign: 'left',
     marginBottom: 20,
     color: '#D64527',
   },
