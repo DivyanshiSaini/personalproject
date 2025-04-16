@@ -8,11 +8,12 @@ import Recipes from './pages/recipes';
 import { LogBox } from 'react-native';
 import Login from './pages/login';
 import Signup from './pages/signup';
-import MyLibrary from './pages/myLibrary';
+import AboutUs from './pages/aboutUs';
 import FavoriteRecipes from './pages/favoriteRecipes';
 import Settings from './pages/settings';
 import ChatBox from './pages/chatBox';
 import RecipeDetails from './pages/recipeDetails';
+import AccountInfo from './pages/accountInfo';
 
 const Tabs = createBottomTabNavigator();
 
@@ -23,7 +24,7 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#228B22',
+          backgroundColor: '#4CAF50',
           borderTopWidth: 0,
           height: 80,
         },
@@ -39,7 +40,7 @@ export default function TabsLayout() {
         options={{
           tabBarIcon: () => (
             <Image
-              source={{ uri: 'https://img.icons8.com/ios-filled/50/FFFFFF/home.png' }}
+              source={{ uri: 'https://img.icons8.com/ios-filled/50/FFFFFF/chat.png' }}
               style={{ width: 30, height: 30, marginBottom: -20 }}
             />
           ),
@@ -65,7 +66,7 @@ export default function TabsLayout() {
         options={{
           tabBarIcon: () => (
             <Image
-              source={{ uri: 'https://img.icons8.com/ios-filled/50/FFFFFF/book.png' }}
+              source={{ uri: 'https://img.icons8.com/ios-filled/50/FFFFFF/settings.png' }}
               style={{ width: 30, height: 30, marginBottom: -20 }}
             />
           ),
@@ -106,14 +107,20 @@ export default function TabsLayout() {
       />
       {/* Hidden Screen */}
       <Tabs.Screen
-        name="MyLibrary"
-        component={MyLibrary}
+        name="AboutUs"
+        component={AboutUs}
         options={{ tabBarItemStyle: { display: "none" } }}
       />
       {/* Hidden Screen */}
       <Tabs.Screen
         name="FavoriteRecipes"
         component={FavoriteRecipes}
+        options={{ tabBarItemStyle: { display: "none" } }}
+      />
+      {/* Hidden Screen */}
+      <Tabs.Screen
+        name="AccountInfo"
+        component={AccountInfo}
         options={{ tabBarItemStyle: { display: "none" } }}
       />
     </Tabs.Navigator>

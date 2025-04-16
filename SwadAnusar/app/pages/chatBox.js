@@ -25,7 +25,7 @@ import {
   where
 } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AntDesign, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, MaterialIcons, Ionicons } from '@expo/vector-icons';
 
 const ChatBox = () => {
   const route = useRoute();
@@ -59,7 +59,7 @@ const ChatBox = () => {
 
     // Set up the chat header
     navigation.setOptions({
-      title: chatName || 'Chat',
+      headerShown: false, // Hide default header
     });
 
     // Get current user information
@@ -352,11 +352,24 @@ const ChatBox = () => {
       style={styles.container}
       keyboardVerticalOffset={90}
     >
-      {/* Chat recipient header */}
-      <View style={styles.recipientHeader}>
-        <Text style={styles.recipientText}>
-          Chatting with: <Text style={styles.recipientName}>{chatName}</Text>
-        </Text>
+      {/* New custom header with back button and user image */}
+      <View style={styles.customHeader}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#D64527" />
+        </TouchableOpacity>
+        
+        <View style={styles.userInfoContainer}>
+          <Image 
+            source={{ uri: 'https://via.placeholder.com/40' }} // Replace with actual user image
+            style={styles.userAvatar}
+          />
+          <Text style={styles.userName}>{chatName}</Text>
+        </View>
+        
+        <View style={styles.headerRightSpace} />
       </View>
       
       <FlatList
@@ -406,21 +419,44 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  recipientHeader: {
+  // New custom header styles
+  customHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 12,
+    paddingTop: Platform.OS === 'ios' ? 50 : 15,
+    paddingBottom: 15,
+    paddingHorizontal: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
-    elevation: 2,
+    elevation: 3,
   },
-  recipientText: {
-    fontSize: 14,
-    color: '#666',
+  backButton: {
+    padding: 8,
   },
-  recipientName: {
+  userInfoContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  userAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  userName: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#D64527',
+    color: '#333',
   },
+  headerRightSpace: {
+    width: 40,
+  },
+  // Original styles with recipientHeader removed
   messagesList: {
     padding: 15,
   },

@@ -47,17 +47,6 @@ const RecipeDetailsScreen = ({ route }) => {
         ) : (
           <Text style={styles.emptyText}>No steps added.</Text>
         )}
-        // Add to RecipeDetailsScreen component
-          <View style={styles.shareContainer}>
-            <TouchableOpacity 
-              style={styles.shareButton}
-              onPress={() => navigation.navigate('ChatBox', {
-                sharedRecipe: recipe
-              })}
-            >
-              <Text style={styles.shareButtonText}>Share this Recipe</Text>
-            </TouchableOpacity>
-          </View>
       </View>
     </ScrollView>
   );

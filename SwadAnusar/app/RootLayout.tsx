@@ -5,7 +5,7 @@ import { FIREBASE_AUTH } from './firebase/config'; // Ensure this is correctly i
 import InsideLayout from './insideLayout';
 import Login from './pages/login';
 import Signup from './pages/signup';
-//import ForgotPassword from './pages/forgotPassword'; 
+import ForgotPassword from './pages/forgotPassword'; 
 import HomeScreen from './pages/home';
 import { View, ActivityIndicator } from 'react-native';
 
@@ -59,6 +59,11 @@ export default function RootLayout() {
           <Stack.Screen
             name="Signup"
             component={Signup}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ForgotPassword"
+            component={ForgotPassword}
             options={{ headerShown: false }}
           />
         </>
