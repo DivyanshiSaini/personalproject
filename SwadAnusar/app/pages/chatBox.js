@@ -1,29 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  FlatList, 
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-  Modal
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Image,KeyboardAvoidingView,Platform,Alert,Modal} from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../firebase/config';
-import { 
-  collection, 
-  addDoc, 
-  onSnapshot, 
-  query, 
-  orderBy, 
-  serverTimestamp,
-  getDocs,
-  where
-} from 'firebase/firestore';
+import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp,getDocs,where} from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AntDesign, MaterialIcons, Ionicons } from '@expo/vector-icons';
 

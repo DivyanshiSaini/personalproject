@@ -1,14 +1,6 @@
 // screens/FavoriteRecipes.js
 import React, { useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  Image,
-  ImageBackground,
-  TouchableOpacity,
-} from 'react-native';
+import {View,Text,FlatList,StyleSheet,Image,ImageBackground,TouchableOpacity,} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
