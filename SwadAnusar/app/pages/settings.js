@@ -1,14 +1,6 @@
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  ImageBackground,
-  Alert,
-} from "react-native";
+import {View, Text, TouchableOpacity, StyleSheet, Image, ImageBackground, Alert,} from "react-native";
 import { signOut } from "firebase/auth";
 import { FIREBASE_AUTH } from "../firebase/config";
 import Ionicons from "react-native-vector-icons/Ionicons"; // 🆕 import icon

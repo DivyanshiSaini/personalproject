@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ImageBackground, 
-  ScrollView, 
-  FlatList, 
-  Image 
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, ScrollView, FlatList, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../firebase/config';
 import { collection, query, where, getDocs } from 'firebase/firestore';

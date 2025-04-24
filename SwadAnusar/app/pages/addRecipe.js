@@ -1,18 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView, 
-  Image, 
-  StyleSheet, 
-  ImageBackground, 
-  KeyboardAvoidingView, 
-  Platform, 
-  SafeAreaView,
-  Keyboard 
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, StyleSheet, ImageBackground, KeyboardAvoidingView, Platform, SafeAreaView,Keyboard } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
