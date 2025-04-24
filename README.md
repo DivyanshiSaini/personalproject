@@ -1,6 +1,6 @@
 # personalproject
 
-# 🍲 Swad Anusar — A Cross-Platform Family Recipe Sharing App
+# 🍲 Swad Anusar: A Cross-Platform Family Recipe Sharing App
 
 Swad Anusar is a full-stack mobile app built with React Native and Firebase that allows families to preserve, share, and celebrate their culinary heritage. With secure login, recipe uploads, real-time group and private chats, and an intuitive design, it’s built to be used and loved across generations.
 
