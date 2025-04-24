@@ -6,7 +6,7 @@ Swad Anusar is a full-stack mobile app built with React Native and Firebase that
 
 ---
 
-## ✨ Features
+##  Features
 
 - 🔐 **Login / Sign Up** – Secure Firebase authentication
 - 🔁 **Password Retrieval** – Email-based password reset
@@ -19,7 +19,7 @@ Swad Anusar is a full-stack mobile app built with React Native and Firebase that
 
 ---
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 - **Frontend**: React Native + Expo
 - **Backend**: Node.js with Express
@@ -32,7 +32,7 @@ Swad Anusar is a full-stack mobile app built with React Native and Firebase that
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### 1. Clone the Repository
 
