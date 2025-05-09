@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ImageBackground,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
+  View, Text, TextInput, TouchableOpacity,ImageBackground,StyleSheet,ActivityIndicator,Alert} from 'react-native';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { FIREBASE_AUTH } from '../firebase/config';
 import Ionicons from 'react-native-vector-icons/Ionicons';
